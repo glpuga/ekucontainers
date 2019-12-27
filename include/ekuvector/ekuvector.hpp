@@ -839,7 +839,7 @@ void ekuvector<Type, Allocator>::clear() noexcept {
 template <class Type, class Allocator>
 typename ekuvector<Type, Allocator>::iterator
 ekuvector<Type, Allocator>::insert(const_iterator pos, const Type &value) {
-  const auto pos_ordinal = std::distance(cbegin(), pos);
+  const auto pos_ordinal = empty() ? 0 : std::distance(cbegin(), pos);
   push_back(value); // this can invalidate pos
   auto new_pos = begin() + pos_ordinal;
   auto index = end() - 1;
@@ -853,7 +853,7 @@ ekuvector<Type, Allocator>::insert(const_iterator pos, const Type &value) {
 template <class Type, class Allocator>
 typename ekuvector<Type, Allocator>::iterator
 ekuvector<Type, Allocator>::insert(const_iterator pos, Type &&value) {
-  const auto pos_ordinal = std::distance(cbegin(), pos);
+  const auto pos_ordinal = empty() ? 0 : std::distance(cbegin(), pos);
   push_back(std::move(value)); // this can invalidate pos
   auto new_pos = begin() + pos_ordinal;
   auto index = end() - 1;
@@ -908,7 +908,7 @@ ekuvector<Type, Allocator>::insert(
   const auto elements_to_insert = std::distance(first, last);
   iterator new_pos;
   if (elements_to_insert > 0) {
-    const auto pos_ordinal = std::distance(cbegin(), pos);
+    const auto pos_ordinal = empty() ? 0 : std::distance(cbegin(), pos);
     preallocate_capacity(size() +
                          elements_to_insert); // this can invalidate pos
     new_pos = begin() + pos_ordinal;
@@ -947,7 +947,7 @@ template <class Type, class Allocator>
 template <class... Args>
 typename ekuvector<Type, Allocator>::iterator
 ekuvector<Type, Allocator>::emplace(const_iterator pos, Args &&... args) {
-  const auto pos_ordinal = std::distance(cbegin(), pos);
+  const auto pos_ordinal = empty() ? 0 : std::distance(cbegin(), pos);
   emplace_back(std::forward<Args>(args)...);
   const auto new_pos = begin() + pos_ordinal;
   auto index = end() - 1;
