@@ -22,13 +22,10 @@ template <class, class Enable = void> struct is_iterator : std::false_type {};
 
 template <typename T>
 struct is_iterator<T, typename std::enable_if<
-                          std::is_base_of<std::input_iterator_tag,
-                                          typename std::iterator_traits<
-                                              T>::iterator_category>::value ||
-                          std::is_same<std::output_iterator_tag,
-                                       typename std::iterator_traits<
-                                           T>::iterator_category>::value>::type>
-    : std::true_type {};
+                          std::is_base_of<std::input_iterator_tag, typename std::iterator_traits<T>::iterator_category
+                      >::value
+                  >::type> : std::true_type {};
+
 template <class Type, class Allocator = std::allocator<Type>> class ekuvector {
 public:
   using type = Type;
