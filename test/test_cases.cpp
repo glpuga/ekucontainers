@@ -511,6 +511,144 @@ TEST_F(IteratorTests, IteratorMembersReverseEnd) {
   EXPECT_EQ("42", *(uut_obj.rend() - 1));
 }
 
+TEST_F(IteratorTests, MovingForwardRangeFor) {
+  {
+    ekuvector<int32_t> uut_pod({97, 98, 99});
+    std::vector<int32_t> output_sequence;
+    for (auto &value: uut_pod) {
+      output_sequence.push_back(value);
+    }
+    EXPECT_EQ(
+      std::vector<int32_t>({97, 98, 99}),
+      output_sequence);
+  }
+  {
+    ekuvector<std::string> uut_obj({"97", "98", "99"});
+    std::vector<std::string> output_sequence;
+    for (auto &value: uut_obj) {
+      output_sequence.push_back(value);
+    }
+    EXPECT_EQ(
+      std::vector<std::string>({"97", "98", "99"}),
+      output_sequence);
+  }
+}
+
+TEST_F(IteratorTests, MovingForwardClassicFor) {
+  {
+    ekuvector<int32_t> uut_pod({97, 98, 99});
+    std::vector<int32_t> output_sequence;
+    for (auto it = uut_pod.begin(); it != uut_pod.end(); ++it) {
+      output_sequence.push_back(*it);
+    }
+    EXPECT_EQ(
+      std::vector<int32_t>({97, 98, 99}),
+      output_sequence);
+  }
+  {
+    ekuvector<std::string> uut_obj({"97", "98", "99"});
+    std::vector<std::string> output_sequence;
+    for (auto it = uut_obj.begin(); it != uut_obj.end(); ++it) {
+      output_sequence.push_back(*it);
+    }
+    EXPECT_EQ(
+      std::vector<std::string>({"97", "98", "99"}),
+      output_sequence);
+  }
+}
+
+TEST_F(IteratorTests, MovingForwardClassicForConstIterator) {
+  {
+    ekuvector<int32_t> uut_pod({97, 98, 99});
+    std::vector<int32_t> output_sequence;
+    for (auto it = uut_pod.cbegin(); it != uut_pod.cend(); ++it) {
+      output_sequence.push_back(*it);
+    }
+    EXPECT_EQ(
+      std::vector<int32_t>({97, 98, 99}),
+      output_sequence);
+  }
+  {
+    ekuvector<std::string> uut_obj({"97", "98", "99"});
+    std::vector<std::string> output_sequence;
+    for (auto it = uut_obj.cbegin(); it != uut_obj.cend(); ++it) {
+      output_sequence.push_back(*it);
+    }
+    EXPECT_EQ(
+      std::vector<std::string>({"97", "98", "99"}),
+      output_sequence);
+  }
+}
+
+TEST_F(IteratorTests, MovingBackwardClassicForConstIterator) {
+  {
+    ekuvector<int32_t> uut_pod({97, 98, 99});
+    std::vector<int32_t> output_sequence;
+    for (auto it = uut_pod.crbegin(); it != uut_pod.crend(); ++it) {
+      output_sequence.push_back(*it);
+    }
+    EXPECT_EQ(
+      std::vector<int32_t>({99, 98, 97}),
+      output_sequence);
+  }
+  {
+    ekuvector<std::string> uut_obj({"97", "98", "99"});
+    std::vector<std::string> output_sequence;
+    for (auto it = uut_obj.crbegin(); it != uut_obj.crend(); ++it) {
+      output_sequence.push_back(*it);
+    }
+    EXPECT_EQ(
+      std::vector<std::string>({"99", "98", "97"}),
+      output_sequence);
+  }
+}
+
+TEST_F(IteratorTests, MovingForwardClassicForConstSource) {
+  {
+    const ekuvector<int32_t> uut_pod({97, 98, 99});
+    std::vector<int32_t> output_sequence;
+    for (auto it = uut_pod.begin(); it != uut_pod.end(); ++it) {
+      output_sequence.push_back(*it);
+    }
+    EXPECT_EQ(
+      std::vector<int32_t>({97, 98, 99}),
+      output_sequence);
+  }
+  {
+    const ekuvector<std::string> uut_obj({"97", "98", "99"});
+    std::vector<std::string> output_sequence;
+    for (auto it = uut_obj.begin(); it != uut_obj.end(); ++it) {
+      output_sequence.push_back(*it);
+    }
+    EXPECT_EQ(
+      std::vector<std::string>({"97", "98", "99"}),
+      output_sequence);
+  }
+}
+
+TEST_F(IteratorTests, MovingBackwardClassicForConstSource) {
+  {
+    const ekuvector<int32_t> uut_pod({97, 98, 99});
+    std::vector<int32_t> output_sequence;
+    for (auto it = uut_pod.rbegin(); it != uut_pod.rend(); ++it) {
+      output_sequence.push_back(*it);
+    }
+    EXPECT_EQ(
+      std::vector<int32_t>({99, 98, 97}),
+      output_sequence);
+  }
+  {
+    const ekuvector<std::string> uut_obj({"97", "98", "99"});
+    std::vector<std::string> output_sequence;
+    for (auto it = uut_obj.rbegin(); it != uut_obj.rend(); ++it) {
+      output_sequence.push_back(*it);
+    }
+    EXPECT_EQ(
+      std::vector<std::string>({"99", "98", "97"}),
+      output_sequence);
+  }
+}
+
 class StorageManagementTests : public EkuVectorTests {};
 
 TEST_F(StorageManagementTests, EmptyAndSizeMembers) {
