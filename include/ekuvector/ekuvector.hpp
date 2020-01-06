@@ -14,8 +14,6 @@
 #include <type_traits>
 #include <utility>
 
-#include <iostream> // TODO remove after debug
-
 namespace ekustd {
 
 template <class, class Enable = void> struct is_iterator : std::false_type {};
