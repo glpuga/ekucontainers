@@ -970,9 +970,7 @@ ekuvector<Type, Allocator>::erase(const_iterator pos) {
 template <class Type, class Allocator>
 typename ekuvector<Type, Allocator>::iterator
 ekuvector<Type, Allocator>::erase(const_iterator first, const_iterator last) {
-  /* Move the elements within both iterators towards the end, then remove them
-   */
-
+  /* Move the elements within both iterators towards the end, then remove them */
   auto head = begin() + std::distance(cbegin(), first);
   auto tail = begin() + std::distance(cbegin(), last);
   auto return_it = head;
