@@ -1001,7 +1001,7 @@ template <class Type, class Allocator>
 void ekuvector<Type, Allocator>::push_back(Type &&value) {
   /* make sure there's enough storage */
   preallocate_capacity(size_ + 1);
-  /* copy construct the new element */
+  /* move construct the new element */
   allocator_.construct(data_ + size_, std::move(value));
   ++size_;
 }
