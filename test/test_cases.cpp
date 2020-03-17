@@ -362,6 +362,7 @@ TEST_F(ElementAccessTests, AtMemberNonConst) {
   EXPECT_EQ(98, uut_pod.at(1));
   EXPECT_EQ(99, uut_pod.at(2));
   EXPECT_THROW(uut_pod.at(3), std::out_of_range);
+  EXPECT_THROW(uut_pod.at(-1), std::out_of_range);
 
   uut_pod.at(1) = 42;
   EXPECT_EQ(42, uut_pod.at(1));
@@ -369,7 +370,8 @@ TEST_F(ElementAccessTests, AtMemberNonConst) {
   EXPECT_EQ("97", uut_obj.at(0));
   EXPECT_EQ("98", uut_obj.at(1));
   EXPECT_EQ("99", uut_obj.at(2));
-  EXPECT_THROW(uut_pod.at(3), std::out_of_range);
+  EXPECT_THROW(uut_obj.at(3), std::out_of_range);
+  EXPECT_THROW(uut_obj.at(-1), std::out_of_range);
 
   uut_obj.at(1) = "42";
   EXPECT_EQ("42", uut_obj.at(1));
@@ -383,11 +385,13 @@ TEST_F(ElementAccessTests, AtMemberWhenConst) {
   EXPECT_EQ(98, uut_pod.at(1));
   EXPECT_EQ(99, uut_pod.at(2));
   EXPECT_THROW(uut_pod.at(3), std::out_of_range);
+  EXPECT_THROW(uut_pod.at(-1), std::out_of_range);
 
   EXPECT_EQ("97", uut_obj.at(0));
   EXPECT_EQ("98", uut_obj.at(1));
   EXPECT_EQ("99", uut_obj.at(2));
-  EXPECT_THROW(uut_pod.at(3), std::out_of_range);
+  EXPECT_THROW(uut_obj.at(3), std::out_of_range);
+  EXPECT_THROW(uut_obj.at(-1), std::out_of_range);
 }
 
 TEST_F(ElementAccessTests, FrontAndBackNonConst) {
