@@ -2,6 +2,7 @@
 set(PROJECT_TEST_SRCS
   runner.cpp
   test_cases.cpp
+  test_appendix.cpp
 )
 
 enable_testing()
