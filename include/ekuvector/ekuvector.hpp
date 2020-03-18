@@ -563,7 +563,9 @@ operator=(ekuvector &&other) {
   clear();
   preallocate_capacity(other.size());
   /* move-insert the element from the source here*/
-  std::move(other.begin(), other.end(), std::back_inserter(*this));
+  for (auto it = other.begin(); it != other.end(); ++it) {
+    emplace_back(std::move(*it));
+  }
   return *this;
 }
 
@@ -1002,7 +1004,7 @@ void ekuvector<Type, Allocator>::push_back(Type &&value) {
   /* make sure there's enough storage */
   preallocate_capacity(size_ + 1);
   /* move construct the new element */
-  allocator_.construct(data_ + size_, std::move(value));
+  allocator_.construct(data_ + size_, std::forward<Type>(value));
   ++size_;
 }
 
