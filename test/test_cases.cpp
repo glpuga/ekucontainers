@@ -16,6 +16,53 @@
 
 namespace ekustd {
 
+class IChar {
+public:
+  IChar() { ++default_constructor_; }
+  IChar(char value) {
+    ++value_constructor_;
+    value_ = value;
+  }
+  IChar(const IChar &other) {
+    ++copy_ops_;
+    value_ = other.value_;
+  }
+  IChar(IChar &&other) {
+    ++move_ops_;
+    value_ = other.value_;
+  }
+  IChar &operator=(const IChar &other) {
+    ++copy_ops_;
+    value_ = other.value_;
+    return *this;
+  }
+  IChar &operator=(IChar &&other) {
+    ++move_ops_;
+    value_ = other.value_;
+    return *this;
+  }
+
+  static void reset() {
+    default_constructor_ = 0;
+    value_constructor_ = 0;
+    copy_ops_ = 0;
+    move_ops_ = 0;
+  }
+
+  static int32_t default_constructor_;
+  static int32_t value_constructor_;
+  static int32_t copy_ops_;
+  static int32_t move_ops_;
+
+private:
+  char value_;
+};
+
+int32_t IChar::default_constructor_;
+int32_t IChar::value_constructor_;
+int32_t IChar::copy_ops_;
+int32_t IChar::move_ops_;
+
 class EkuVectorTests : public testing::Test {};
 
 class ConstructorTests : public EkuVectorTests {};
@@ -139,57 +186,76 @@ TEST_F(ConstructorTests, ConstructFromInitiliazerListNoAllocator) {
 class AssignmentTests : public EkuVectorTests {};
 
 TEST_F(AssignmentTests, CopyAssignment) {
-  ekuvector<int32_t> source_vector_pod({97, 98, 99});
-  ekuvector<std::string> source_vector_obj({"97", "98", "99"});
+  {
+    ekuvector<int32_t> source_vector_pod({97, 98, 99});
+    ekuvector<std::string> source_vector_obj({"97", "98", "99"});
 
-  ekuvector<int32_t> uut_pod;
-  ekuvector<std::string> uut_obj;
+    ekuvector<int32_t> uut_pod;
+    ekuvector<std::string> uut_obj;
 
-  ASSERT_EQ(0, uut_pod.size());
-  ASSERT_EQ(0, uut_obj.size());
+    ASSERT_EQ(0, uut_pod.size());
+    ASSERT_EQ(0, uut_obj.size());
 
-  uut_pod = source_vector_pod;
-  uut_obj = source_vector_obj;
+    uut_pod = source_vector_pod;
+    uut_obj = source_vector_obj;
 
-  ASSERT_EQ(3, source_vector_pod.size());
-  ASSERT_EQ(3, source_vector_obj.size());
+    ASSERT_EQ(3, source_vector_pod.size());
+    ASSERT_EQ(3, source_vector_obj.size());
 
-  ASSERT_EQ(3, uut_pod.size());
-  EXPECT_EQ(97, uut_pod[0]);
-  EXPECT_EQ(98, uut_pod[1]);
-  EXPECT_EQ(99, uut_pod[2]);
+    ASSERT_EQ(3, uut_pod.size());
+    EXPECT_EQ(97, uut_pod[0]);
+    EXPECT_EQ(98, uut_pod[1]);
+    EXPECT_EQ(99, uut_pod[2]);
 
-  ASSERT_EQ(3, uut_obj.size());
-  EXPECT_EQ("97", uut_obj[0]);
-  EXPECT_EQ("98", uut_obj[1]);
-  EXPECT_EQ("99", uut_obj[2]);
+    ASSERT_EQ(3, uut_obj.size());
+    EXPECT_EQ("97", uut_obj[0]);
+    EXPECT_EQ("98", uut_obj[1]);
+    EXPECT_EQ("99", uut_obj[2]);
+  }
+  {
+    ekuvector<IChar> source({'a', 'b', 'c'});
+    ekuvector<IChar> instrumented_uut;
+    IChar::reset();
+    instrumented_uut = source;
+    EXPECT_EQ(0, IChar::value_constructor_);
+    EXPECT_EQ(3, IChar::copy_ops_);
+    EXPECT_EQ(0, IChar::move_ops_);
+  }
 }
 
 TEST_F(AssignmentTests, MoveAssignment) {
-  ekuvector<int32_t> source_vector_pod({97, 98, 99});
-  ekuvector<std::string> source_vector_obj({"97", "98", "99"});
+  {
+    ekuvector<int32_t> source_vector_pod({97, 98, 99});
+    ekuvector<std::string> source_vector_obj({"97", "98", "99"});
 
-  ekuvector<int32_t> uut_pod;
-  ekuvector<std::string> uut_obj;
+    ekuvector<int32_t> uut_pod;
+    ekuvector<std::string> uut_obj;
 
-  ASSERT_EQ(0, uut_pod.size());
-  ASSERT_EQ(0, uut_obj.size());
+    ASSERT_EQ(0, uut_pod.size());
+    ASSERT_EQ(0, uut_obj.size());
 
-  uut_pod = std::move(source_vector_pod);
-  uut_obj = std::move(source_vector_obj);
+    uut_pod = std::move(source_vector_pod);
+    uut_obj = std::move(source_vector_obj);
 
-  ASSERT_EQ(3, uut_pod.size());
-  EXPECT_EQ(97, uut_pod[0]);
-  EXPECT_EQ(98, uut_pod[1]);
-  EXPECT_EQ(99, uut_pod[2]);
+    ASSERT_EQ(3, uut_pod.size());
+    EXPECT_EQ(97, uut_pod[0]);
+    EXPECT_EQ(98, uut_pod[1]);
+    EXPECT_EQ(99, uut_pod[2]);
 
-  ASSERT_EQ(3, uut_obj.size());
-  EXPECT_EQ("97", uut_obj[0]);
-  EXPECT_EQ("98", uut_obj[1]);
-  EXPECT_EQ("99", uut_obj[2]);
-
-  // Note that the current implementation of this operator overload
-  // does not empty the source vectors
+    ASSERT_EQ(3, uut_obj.size());
+    EXPECT_EQ("97", uut_obj[0]);
+    EXPECT_EQ("98", uut_obj[1]);
+    EXPECT_EQ("99", uut_obj[2]);
+  }
+  {
+    ekuvector<IChar> source({'a', 'b', 'c'});
+    ekuvector<IChar> instrumented_uut;
+    IChar::reset();
+    instrumented_uut = std::move(source);
+    EXPECT_EQ(0, IChar::value_constructor_);
+    EXPECT_EQ(0, IChar::copy_ops_);
+    EXPECT_EQ(3, IChar::move_ops_);
+  }
 }
 
 TEST_F(AssignmentTests, InitializerListAssignment) {
@@ -519,22 +585,18 @@ TEST_F(IteratorTests, MovingForwardRangeFor) {
   {
     ekuvector<int32_t> uut_pod({97, 98, 99});
     std::vector<int32_t> output_sequence;
-    for (auto &value: uut_pod) {
+    for (auto &value : uut_pod) {
       output_sequence.push_back(value);
     }
-    EXPECT_EQ(
-      std::vector<int32_t>({97, 98, 99}),
-      output_sequence);
+    EXPECT_EQ(std::vector<int32_t>({97, 98, 99}), output_sequence);
   }
   {
     ekuvector<std::string> uut_obj({"97", "98", "99"});
     std::vector<std::string> output_sequence;
-    for (auto &value: uut_obj) {
+    for (auto &value : uut_obj) {
       output_sequence.push_back(value);
     }
-    EXPECT_EQ(
-      std::vector<std::string>({"97", "98", "99"}),
-      output_sequence);
+    EXPECT_EQ(std::vector<std::string>({"97", "98", "99"}), output_sequence);
   }
 }
 
@@ -545,9 +607,7 @@ TEST_F(IteratorTests, MovingForwardClassicFor) {
     for (auto it = uut_pod.begin(); it != uut_pod.end(); ++it) {
       output_sequence.push_back(*it);
     }
-    EXPECT_EQ(
-      std::vector<int32_t>({97, 98, 99}),
-      output_sequence);
+    EXPECT_EQ(std::vector<int32_t>({97, 98, 99}), output_sequence);
   }
   {
     ekuvector<std::string> uut_obj({"97", "98", "99"});
@@ -555,9 +615,7 @@ TEST_F(IteratorTests, MovingForwardClassicFor) {
     for (auto it = uut_obj.begin(); it != uut_obj.end(); ++it) {
       output_sequence.push_back(*it);
     }
-    EXPECT_EQ(
-      std::vector<std::string>({"97", "98", "99"}),
-      output_sequence);
+    EXPECT_EQ(std::vector<std::string>({"97", "98", "99"}), output_sequence);
   }
 }
 
@@ -568,9 +626,7 @@ TEST_F(IteratorTests, MovingForwardClassicForConstIterator) {
     for (auto it = uut_pod.cbegin(); it != uut_pod.cend(); ++it) {
       output_sequence.push_back(*it);
     }
-    EXPECT_EQ(
-      std::vector<int32_t>({97, 98, 99}),
-      output_sequence);
+    EXPECT_EQ(std::vector<int32_t>({97, 98, 99}), output_sequence);
   }
   {
     ekuvector<std::string> uut_obj({"97", "98", "99"});
@@ -578,9 +634,7 @@ TEST_F(IteratorTests, MovingForwardClassicForConstIterator) {
     for (auto it = uut_obj.cbegin(); it != uut_obj.cend(); ++it) {
       output_sequence.push_back(*it);
     }
-    EXPECT_EQ(
-      std::vector<std::string>({"97", "98", "99"}),
-      output_sequence);
+    EXPECT_EQ(std::vector<std::string>({"97", "98", "99"}), output_sequence);
   }
 }
 
@@ -591,9 +645,7 @@ TEST_F(IteratorTests, MovingBackwardClassicForConstIterator) {
     for (auto it = uut_pod.crbegin(); it != uut_pod.crend(); ++it) {
       output_sequence.push_back(*it);
     }
-    EXPECT_EQ(
-      std::vector<int32_t>({99, 98, 97}),
-      output_sequence);
+    EXPECT_EQ(std::vector<int32_t>({99, 98, 97}), output_sequence);
   }
   {
     ekuvector<std::string> uut_obj({"97", "98", "99"});
@@ -601,9 +653,7 @@ TEST_F(IteratorTests, MovingBackwardClassicForConstIterator) {
     for (auto it = uut_obj.crbegin(); it != uut_obj.crend(); ++it) {
       output_sequence.push_back(*it);
     }
-    EXPECT_EQ(
-      std::vector<std::string>({"99", "98", "97"}),
-      output_sequence);
+    EXPECT_EQ(std::vector<std::string>({"99", "98", "97"}), output_sequence);
   }
 }
 
@@ -614,9 +664,7 @@ TEST_F(IteratorTests, MovingForwardClassicForConstSource) {
     for (auto it = uut_pod.begin(); it != uut_pod.end(); ++it) {
       output_sequence.push_back(*it);
     }
-    EXPECT_EQ(
-      std::vector<int32_t>({97, 98, 99}),
-      output_sequence);
+    EXPECT_EQ(std::vector<int32_t>({97, 98, 99}), output_sequence);
   }
   {
     const ekuvector<std::string> uut_obj({"97", "98", "99"});
@@ -624,9 +672,7 @@ TEST_F(IteratorTests, MovingForwardClassicForConstSource) {
     for (auto it = uut_obj.begin(); it != uut_obj.end(); ++it) {
       output_sequence.push_back(*it);
     }
-    EXPECT_EQ(
-      std::vector<std::string>({"97", "98", "99"}),
-      output_sequence);
+    EXPECT_EQ(std::vector<std::string>({"97", "98", "99"}), output_sequence);
   }
 }
 
@@ -637,9 +683,7 @@ TEST_F(IteratorTests, MovingBackwardClassicForConstSource) {
     for (auto it = uut_pod.rbegin(); it != uut_pod.rend(); ++it) {
       output_sequence.push_back(*it);
     }
-    EXPECT_EQ(
-      std::vector<int32_t>({99, 98, 97}),
-      output_sequence);
+    EXPECT_EQ(std::vector<int32_t>({99, 98, 97}), output_sequence);
   }
   {
     const ekuvector<std::string> uut_obj({"97", "98", "99"});
@@ -647,9 +691,7 @@ TEST_F(IteratorTests, MovingBackwardClassicForConstSource) {
     for (auto it = uut_obj.rbegin(); it != uut_obj.rend(); ++it) {
       output_sequence.push_back(*it);
     }
-    EXPECT_EQ(
-      std::vector<std::string>({"99", "98", "97"}),
-      output_sequence);
+    EXPECT_EQ(std::vector<std::string>({"99", "98", "97"}), output_sequence);
   }
 }
 
@@ -772,7 +814,7 @@ TEST_F(InsertTests, CopyInsert) {
     uut.insert(uut.begin() + 2, var);
 
     EXPECT_EQ(expected, uut);
-  };
+  }
 
   {
     const ekuvector<std::string> expected{"1", "2", "3", "4"};
@@ -793,7 +835,18 @@ TEST_F(InsertTests, CopyInsert) {
     uut.insert(uut.begin() + 2, var);
 
     EXPECT_EQ(expected, uut);
-  };
+  }
+
+  {
+    ekuvector<IChar> uut;
+    IChar var;
+    IChar::reset();
+    uut.insert(uut.begin(), var);
+
+    EXPECT_EQ(0, IChar::value_constructor_);
+    EXPECT_EQ(1, IChar::copy_ops_);
+    EXPECT_EQ(0, IChar::move_ops_);
+  }
 }
 
 TEST_F(InsertTests, MoveInsert) {
@@ -816,7 +869,7 @@ TEST_F(InsertTests, MoveInsert) {
     uut.insert(uut.begin() + 2, std::move(var));
 
     EXPECT_EQ(expected, uut);
-  };
+  }
 
   {
     const ekuvector<std::string> expected{"1", "2", "3", "4"};
@@ -837,7 +890,18 @@ TEST_F(InsertTests, MoveInsert) {
     uut.insert(uut.begin() + 2, std::move(var));
 
     EXPECT_EQ(expected, uut);
-  };
+  }
+
+  {
+    ekuvector<IChar> uut;
+    IChar var;
+    IChar::reset();
+    uut.insert(uut.begin(), std::move(var));
+
+    EXPECT_EQ(0, IChar::value_constructor_);
+    EXPECT_EQ(0, IChar::copy_ops_);
+    EXPECT_EQ(1, IChar::move_ops_);
+  }
 }
 
 TEST_F(InsertTests, MultipleInsert) {
@@ -1031,7 +1095,7 @@ TEST_F(PushPopTests, CopyPushBack) {
     uut.push_back(98);
     uut.push_back(99);
     EXPECT_EQ(ekuvector<int32_t>({97, 98, 99}), uut);
-  };
+  }
 
   {
     ekuvector<std::string> uut;
@@ -1039,7 +1103,17 @@ TEST_F(PushPopTests, CopyPushBack) {
     uut.push_back("98");
     uut.push_back("99");
     EXPECT_EQ(ekuvector<std::string>({"97", "98", "99"}), uut);
-  };
+  }
+
+  {
+    ekuvector<IChar> uut;
+    IChar var;
+    IChar::reset();
+    uut.push_back(var);
+    EXPECT_EQ(0, IChar::value_constructor_);
+    EXPECT_EQ(1, IChar::copy_ops_);
+    EXPECT_EQ(0, IChar::move_ops_);
+  }
 }
 
 TEST_F(PushPopTests, MovePushBack) {
@@ -1053,7 +1127,7 @@ TEST_F(PushPopTests, MovePushBack) {
     value = 99;
     uut.push_back(std::move(value));
     EXPECT_EQ(ekuvector<int32_t>({97, 98, 99}), uut);
-  };
+  }
 
   {
     ekuvector<std::string> uut;
@@ -1065,7 +1139,17 @@ TEST_F(PushPopTests, MovePushBack) {
     value = "99";
     uut.push_back(std::move(value));
     EXPECT_EQ(ekuvector<std::string>({"97", "98", "99"}), uut);
-  };
+  }
+
+  {
+    ekuvector<IChar> uut;
+    IChar var;
+    IChar::reset();
+    uut.push_back(std::move(var));
+    EXPECT_EQ(0, IChar::value_constructor_);
+    EXPECT_EQ(0, IChar::copy_ops_);
+    EXPECT_EQ(1, IChar::move_ops_);
+  }
 }
 
 TEST_F(PushPopTests, PopBack) {
